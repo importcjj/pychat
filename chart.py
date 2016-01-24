@@ -56,7 +56,7 @@ class ChatClient(object):
                             sys.stdout.write('{}\n'.format(data))
                             sys.stdout.flush()
                         else:
-                            logger.info('[LOCAL]: Shutdown')
+                            logger.info('[SERVER]: Crashed.')
                             self.connected = 0
             except select.error as e:
                 logger.info('[LOCAL]: {}'.format(e))
