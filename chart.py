@@ -39,6 +39,7 @@ class ChatClient(object):
 
     def shutdown(self):
         send(self.client, '')
+        logger.info('[LOCAL]: Shutdown.')
 
     def run(self):
         while self.connected:
@@ -60,10 +61,10 @@ class ChatClient(object):
                             self.connected = 0
             except select.error as e:
                 logger.info('[LOCAL]: {}'.format(e))
+                self.shutdown()
             except KeyboardInterrupt as e:
-                if self.connected:
-                    send(self.client, '')
-                logger.info('[LOCAL]: {}'.format(e))
+                self.shutdown()
+                sys.exit(1)
 
 
 class ChatServer(object):
@@ -75,7 +76,7 @@ class ChatServer(object):
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server.bind((host, port))
-        logger.info('[SERVER][{}]: Listen to port {}'.format(
+        logger.info('[SERVER][{}]: Listen to port {}.'.format(
             self.clients, host))
         self.server.listen(20)
         signal.signal(signal.SIGINT, self.shutdown)
@@ -106,7 +107,7 @@ class ChatServer(object):
                 if sock == self.server:
                     client, address = self.server.accept()
                     self.clients += 1
-                    logger.info('[SERVER][{}]: Got connection {} from {}'.
+                    logger.info('[SERVER][{}]: Got connection {} from {}.'.
                                 format(self.clients, client.fileno(), address))
                     cname = receive(client).strip('NAME: ')
                     send(client, 'CLIENT: {}'.format(address[0]))
@@ -119,7 +120,7 @@ class ChatServer(object):
                     self.outputs.append(client)
                 elif sock == sys.stdin:
                     junk = sys.stdin.readline()
-                    logger.info('[SERVER][{}]: {}'.format(self.clients, junk))
+                    logger.info('[SERVER][{}]: {}.'.format(self.clients, junk))
                     self.running = 0
                 else:
                     try:
@@ -136,7 +137,7 @@ class ChatServer(object):
                             sock.close()
                             inputs.remove(sock)
                             self.outputs.remove(sock)
-                            message = '[SERVER]: {} has left. Count = {}'.format(
+                            message = '[SERVER]: {} has left. Count = {}.'.format(
                                 self.client_name(sock), self.clients)
                             for output in self.outputs:
                                 send(output, message)
